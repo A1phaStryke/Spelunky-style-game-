@@ -17,19 +17,19 @@ public class LevelGeneration : MonoBehaviour {
     public float startTimeBtwSpawn;
 
     public float doorSpawnTime;
-
-    public List<GameObject> roomsList;
-    // private RoomTemplates templates;
-
     public LayerMask whatIsRoom;
     
+    [Header("Spawned Rooms")]
+    [SerializeField] private List<GameObject> roomsList;
+    [SerializeField] private List<GameObject> lastRooms = new List<GameObject>();
+    private GameObject _currentRoom;
 
     private void Start()
     {  
         int randStartingPos = Random.Range(0, startingPositions.Length);
         transform.position = startingPositions[randStartingPos].position;
-        Instantiate(rooms[1], transform.position, Quaternion.identity);
-
+        
+        SpawnRoomFromIndex(1);
         direction = Random.Range(1, 6);
     }
 
@@ -47,7 +47,6 @@ public class LevelGeneration : MonoBehaviour {
 
     private void Move()
     {
-
         if (direction == 1 || direction == 2)
         { // Move right !
           
@@ -58,8 +57,8 @@ public class LevelGeneration : MonoBehaviour {
                 transform.position = pos;
 
                 int randRoom = Random.Range(1, 4);
-                Instantiate(rooms[randRoom], transform.position, Quaternion.identity);
-
+                SpawnRoomFromIndex(randRoom);
+                
                 // Makes sure the level generator doesn't move left !
                 direction = Random.Range(1, 6);
                 if (direction == 3)
@@ -71,13 +70,13 @@ public class LevelGeneration : MonoBehaviour {
                     direction = 5;
                 }
             }
-            else {
+            else 
+            {
                 direction = 5;
             }
         }
         else if (direction == 3 || direction == 4)
         { // Move left !
-           
             if (transform.position.x > 0)
             {
                 downCounter = 0;
@@ -85,14 +84,14 @@ public class LevelGeneration : MonoBehaviour {
                 transform.position = pos;
 
                 int randRoom = Random.Range(1, 4);
-                Instantiate(rooms[randRoom], transform.position, Quaternion.identity);
-
+                SpawnRoomFromIndex(randRoom);
+                
                 direction = Random.Range(3, 6);
             }
-            else {
+            else 
+            {
                 direction = 5;
             }
-           
         }
         else if (direction == 5)
         { // MoveDown
@@ -104,14 +103,13 @@ public class LevelGeneration : MonoBehaviour {
                 Debug.Log(previousRoom);
                 if (previousRoom.GetComponent<Room>().roomType != 4 && previousRoom.GetComponent<Room>().roomType != 2)
                 {
-
                     // My problem : if the level generation goes down TWICE in a row, there's a chance that the previous room is just 
                     // a LRB, meaning there's no TOP opening for the other room ! 
 
                     if (downCounter >= 2)
                     {
                         previousRoom.GetComponent<Room>().RoomDestruction();
-                        Instantiate(rooms[4], transform.position, Quaternion.identity);
+                        SpawnRoomFromIndex(4);
                     }
                     else
                     {
@@ -121,25 +119,41 @@ public class LevelGeneration : MonoBehaviour {
                         {
                             randRoomDownOpening = 2;
                         }
-                        Instantiate(rooms[randRoomDownOpening], transform.position, Quaternion.identity);
-                    }
 
+                        SpawnRoomFromIndex(randRoomDownOpening);
+                    }
                 }
                 
-               
-  
                 Vector2 pos = new Vector2(transform.position.x, transform.position.y - moveIncrement);
                 transform.position = pos;
 
                 // Makes sure the room we drop into has a TOP opening !
                 int randRoom = Random.Range(3, 5);
-                Instantiate(rooms[randRoom], transform.position, Quaternion.identity);
-
+                SpawnRoomFromIndex(randRoom);
+                
                 direction = Random.Range(1, 6);
+                
             }
-            else {
+            else 
+            {
                 stopGeneration = true;
+                
+                //Do a loop here to get your check
+                foreach (var room in roomsList)
+                {
+                    if (room.name != "Closed Rooms(Clone)")
+                    {
+                        lastRooms.Add(room);
+                    }
+                }
             }
         }
+    }
+
+    /// <summary>Pass a int which matches the room you want to spawn.</summary>
+    void SpawnRoomFromIndex(int roomIndex)
+    {
+        _currentRoom = Instantiate(rooms[roomIndex], transform.position, Quaternion.identity);
+        roomsList.Add(_currentRoom);
     }
 }
