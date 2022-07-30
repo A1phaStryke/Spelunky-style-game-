@@ -8,7 +8,7 @@ public class AddRoom : MonoBehaviour {
 
 	void Start(){
 
-		templates = GameObject.FindGameObjectWithTag("Rooms").GetComponent<LevelGeneration>();
-		templates.roomsList.Add(this.gameObject);
+		//templates = GameObject.FindGameObjectWithTag("Rooms").GetComponent<LevelGeneration>();
+		//templates.roomsList.Add(this.gameObject);
 	}
 }
